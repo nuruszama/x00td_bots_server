@@ -214,13 +214,29 @@ def bot_worker(bot_name, token, admin_id):
                         }
 
                 elif response == "BOT_RELOAD":
+                    # 1. Pull latest code from GitHub
+                    try:
+                        # 'cwd=BASE_DIR' ensures git runs in your project root
+                        pull_result = subprocess.run(
+                            ["git", "pull", "origin", "main"], 
+                            cwd=BASE_DIR, 
+                            capture_output=True, 
+                            text=True
+                        )
+                        pull_msg = "✅ Git: " + (pull_result.stdout[:50] if pull_result.returncode == 0 else "Pull failed")
+                    except Exception as e:
+                        pull_msg = f"❌ Git Error: {str(e)}"
+
+                    # 2. Reload the Python modules
                     importlib.reload(tools)
+                    
                     response = {
                         "type": "text",
                         "data": (
                             "---------------------------------------------------\n"
-                            "          🔄 Logic refreshed!\n"
-                            "---------------------------------------------------"
+                            f"        🔄 *System Refreshed!*\n"
+                            "---------------------------------------------------\n\n"
+                            f" {pull_msg}"
                         )
                     }
 
