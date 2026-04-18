@@ -223,7 +223,7 @@ def bot_worker(bot_name, token, admin_id):
                             capture_output=True, 
                             text=True
                         )
-                        pull_msg = "✅ Git: " + (pull_result.stdout[:50] if pull_result.returncode == 0 else f"❌ Error: {pull_result.stderr[:100]}")
+                        pull_msg = "Git: " + (pull_result.stdout[:50] if pull_result.returncode == 0 else f"❌ Error: {pull_result.stderr[:100]}")
                     except Exception as e:
                         pull_msg = f"❌ Git Error: {str(e)}"
 
@@ -235,10 +235,11 @@ def bot_worker(bot_name, token, admin_id):
                         "data": (
                             "---------------------------------------------------\n"
                             "        🔄 *System Refreshed!*\n"
-                            "---------------------------------------------------\n\n"
-                            f" {pull_msg}"
+                            "---------------------------------------------------"
                         )
                     }
+                    
+                    response = {"type": "text", "data": (f" {pull_msg}")}
 
                 if response and isinstance(response, dict):
                     res_type = response.get("type", "text")
