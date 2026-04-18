@@ -234,7 +234,7 @@ def bot_worker(bot_name, token, admin_id):
                         "type": "text",
                         "data": (
                             "---------------------------------------------------\n"
-                            f"        🔄 *System Refreshed!*\n"
+                            "        🔄 *System Refreshed!*\n"
                             "---------------------------------------------------\n\n"
                             f" {pull_msg}"
                         )
