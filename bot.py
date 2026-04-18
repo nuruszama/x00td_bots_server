@@ -230,6 +230,7 @@ def bot_worker(bot_name, token, admin_id):
                     # 2. Reload the Python modules
                     importlib.reload(tools)
                     
+                    response = {"type": "text", "data": (f" {pull_msg}")}
                     response = {
                         "type": "text",
                         "data": (
@@ -238,8 +239,6 @@ def bot_worker(bot_name, token, admin_id):
                             "---------------------------------------------------"
                         )
                     }
-                    
-                    response = {"type": "text", "data": (f" {pull_msg}")}
 
                 if response and isinstance(response, dict):
                     res_type = response.get("type", "text")
