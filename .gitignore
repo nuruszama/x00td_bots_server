@@ -1,0 +1,16 @@
+# Sensitive Configuration
+config.json
+
+# Databases and Connection Mappings
+creek_connect_database.json
+creek_notes.json
+jegru_movies_database.json
+
+# Logs
+bot.log
+activity_log.json
+*.log
+
+# Python Cache
+__pycache__/
+*.py[cod]
