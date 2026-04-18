@@ -26,6 +26,7 @@ CONFIG = load_config()
 BOT_ADMIN = str(CONFIG.get("bot_admin_id", ""))
 
 LOG_FILE = os.path.join(BASE_DIR, "activity_log.json")
+BOT_LOG_FILE = os.path.join(BASE_DIR, "bot_logs.txt")
 
 def save_to_json(entry):
     try:
@@ -169,20 +170,20 @@ def bot_worker(bot_name, token, admin_id):
                     )
                     continue
                 
-                if response == "CLEAR_LOGS":
+                if response == "CLEAR_CHAT_LOGS":
                     try:
                         if os.path.exists(LOG_FILE):
                             os.remove(LOG_FILE)
                             print("----- LOGS removed -----")
                             response = {
                                 "type": "text",
-                                "data": "🗑️ Logs have been cleared successfully."
+                                "data": "🗑️ Chat logs cleared..."
                             }
 
                         else:
                             response = {
                                 "type": "text",
-                                "data": "info: Log file was already empty."
+                                "data": "info: Log file is already empty."
                             }
 
                     except Exception as e:
@@ -191,7 +192,7 @@ def bot_worker(bot_name, token, admin_id):
                             "data": f"Error clearing logs: {e}"
                         }
 
-                elif response == "UPLOAD_LOGS":
+                elif response == "UPLOAD_CHAT_LOGS":
                     try:
                         if os.path.exists(LOG_FILE):
                             response = {
@@ -199,20 +200,42 @@ def bot_worker(bot_name, token, admin_id):
                                 "data": LOG_FILE,
                                 "caption": "📊 Here is the current activity database."
                             }
-                            print("----- LOGS uploaded -----")
+                            print("----- CHAT LOGS uploaded -----")
 
                         else:
                             response = {
                                 "type": "text",
-                                "data": "info: Log file was already empty."
+                                "data": "info: Log file is empty."
                             }
 
                     except Exception as e:
                         response = {
                             "type": "text",
-                            "data": f"Error clearing logs: {e}"
+                            "data": f"Error uploading logs: {e}"
                         }
 
+                elif response == "UPLOAD_BOT_BACKGROUND_LOGS":
+                    try:
+                        if os.path.exists(BOT_LOG_FILE):
+                            response = {
+                                "type": "document",
+                                "data": BOT_LOG_FILE,
+                                "caption": "Bot background logs."
+                            }
+                            print("----- bot log file uploaded -----")
+
+                        else:
+                            response = {
+                                "type": "text",
+                                "data": "info: Log file is empty."
+                            }
+
+                    except Exception as e:
+                        response = {
+                            "type": "text",
+                            "data": f"Error uploading logs: {e}"
+                        }
+                        
                 elif response == "BOT_RELOAD":
                     # 1. Pull latest code from GitHub
                     try:
