@@ -30,8 +30,8 @@ def get_battery_status():
     except Exception as e:
         return f"Battery Error: {e}"
 
-# Added 'token' to the arguments to match the universal protocol
-def process_logic(msg, admin_id, token):
+# FIXED: Added 'bot_name' to the arguments to match tools.py
+def process_logic(msg, bot_name, admin_id, token):
     # Extract User Info
     user_info = msg.get("from", {})
     user_id = user_info.get("id")
@@ -48,11 +48,11 @@ def process_logic(msg, admin_id, token):
                 "data": (
                     "📦 *System:* X00TD / Snapdragon 636\n"
                     "----------------------------------------------------------------\n"
-                    "       🤖 *TD-Ghost Admin Panel*\n"
+                    f"        🤖 *{bot_name} Admin Panel*\n"
                     "----------------------------------------------------------------\n"
                     "/start         - Alive check\n"
-                    "/status      - Battery info\n"
-                    "/ip              - Server & SMB Info\n"
+                    "/status       - Battery info\n"
+                    "/ip               - Server & SMB Info\n"
                     "/chatlogs     - Activity Database\n"
                     "/botlogs       - bot background logs\n"
                     "/clearlogs  - Reset History\n"
@@ -63,7 +63,7 @@ def process_logic(msg, admin_id, token):
         if text == "/start":
             return {
                 "type": "text",
-                "data": "Hello Master. TD-Ghost is operational on the X00TD bridge."
+                "data": f"Hello Master. {bot_name} is operational on the X00TD bridge."
             }
     
         if text == "/status":
@@ -106,7 +106,7 @@ def process_logic(msg, admin_id, token):
     elif text.startswith("/"):
         return {
             "type": "text",
-            "data": "⛔ *Access Denied.*\n\nThis interface is reserved for the Master Admin."
+            "data": f"⛔ *Access Denied.*\n\nThis interface ({bot_name}) is reserved for the Master Admin."
         }
 
     return None
