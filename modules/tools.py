@@ -37,7 +37,7 @@ def process_logic(msg, bot_name, admin_id, token):
     if target_module:
         # We now pass both admin_id AND token to every single module
         # This allows every bot to check admin rights and send its own logs
-        return target_module.process_logic(msg, admin_id, token)
+        return target_module.process_logic(msg, bot_name, admin_id, token)
     
     # Fallback or Global Logic
     text = msg.get("text", "").lower().strip()
