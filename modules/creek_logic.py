@@ -61,7 +61,7 @@ def sync_group_to_db(msg, token, conn_data):
         pass
     return conn_data
 
-def process_logic(msg, bot_name, admin_id, token): 
+def process_logic(msg, bot_name, admin_id, token):        
     user_info = msg.get("from", {})
     user_id = str(user_info.get("id"))
     chat = msg.get("chat", {})
@@ -71,7 +71,11 @@ def process_logic(msg, bot_name, admin_id, token):
     cmd = text.lower()
     is_master = user_id == str(admin_id)
 
-    # --- 1. ESTABLISH CONTEXT & SYNC ---
+    # deleting all service messages
+    if any(key in msg for key in ["new_chat_members", "left_chat_member", "new_chat_title"]):
+        return "DELETE_MESSAGE"
+
+    # load database to memory
     conn_data = load_json(CONNECT_DB)
     
     # Sync group if message comes from a supergroup
@@ -79,7 +83,8 @@ def process_logic(msg, bot_name, admin_id, token):
         conn_data = sync_group_to_db(msg, token, conn_data)
         save_json(CONNECT_DB, conn_data)
 
-    if "users" not in conn_data: conn_data["users"] = {}
+    if "users" not in conn_data:
+        conn_data["users"] = {}
     if user_id not in conn_data["users"]:
         conn_data["users"][user_id] = {"active_group": "", "connected_groups": {}}
     
@@ -182,9 +187,5 @@ def process_logic(msg, bot_name, admin_id, token):
         db[active_chat_id][note_name] = {"type": content_type, "id": file_id, "caption": reply.get("caption", ""), "original_name": note_name}
         save_json(CREEK_DB, db)
         return {"type": "text", "data": f"✅ Saved `{note_name}`"}
-
-    # --- 5. CLEANER ---
-    if any(key in msg for key in ["new_chat_members", "left_chat_member", "new_chat_title"]):
-        return "DELETE_MESSAGE"
 
     return None
