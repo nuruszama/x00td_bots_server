@@ -218,12 +218,12 @@ def bot_worker(bot_name, token, admin_id):
                     try:
                         # 'cwd=BASE_DIR' ensures git runs in your project root
                         pull_result = subprocess.run(
-                            ["git", "pull", "origin", "main"], 
+                            ["git", "reset", "--hard", "origin/main"], 
                             cwd=BASE_DIR, 
                             capture_output=True, 
                             text=True
                         )
-                        pull_msg = "✅ Git: " + (pull_result.stdout[:50] if pull_result.returncode == 0 else "Pull failed")
+                        pull_msg = "✅ Git: " + (pull_result.stdout[:50] if pull_result.returncode == 0 else f"❌ Error: {pull_result.stderr[:100]}")
                     except Exception as e:
                         pull_msg = f"❌ Git Error: {str(e)}"
 
