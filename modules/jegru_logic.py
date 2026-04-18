@@ -24,7 +24,7 @@ def send_group_log(text, token):
     except: pass
 
 # UPDATED: Added bot_name to function signature to match your bot.py
-def process_logic(msg, admin_id, token):
+def process_logic(msg, bot_name, admin_id, token):
     user_info = msg.get("from", {})
     user_id = str(user_info.get("id"))
     chat_id = str(msg.get("chat", {}).get("id"))
