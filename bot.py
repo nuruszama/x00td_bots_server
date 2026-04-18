@@ -241,7 +241,7 @@ def bot_worker(bot_name, token, admin_id):
                     try:
                         # 'cwd=BASE_DIR' ensures git runs in your project root
                         pull_result = subprocess.run(
-                            ["git", "reset", "--hard", "origin/main"], 
+                            ["git", "pull", "origin", "main"], 
                             cwd=BASE_DIR, 
                             capture_output=True, 
                             text=True
