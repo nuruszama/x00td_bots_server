@@ -69,48 +69,51 @@ def process_logic(msg, admin_id, token):
                 )
             }
     
-    if text == "!groups":
+    if text == "!groups" or text.startswith("!use "):
         conn_data = load_json(CONNECT_DB)
-
-        if chat_id in conn_data["users"]:
-            active_conn = conn_data.get["active_group", {}]
-            return {"type": "text", "data": f"You are connected to {active_conn}"}
         
-        else:
-            return {"type": "text", "data": "You are not connected to any groups"}
+        # 1. Get the specific user's data (important!)
+        # This assumes your JSON structure is { "users": { "USER_ID": { ... } } }
+        user_profile = conn_data.get("users", {}).get(user_id, {})
+        
+        if not user_profile:
+            return {"type": "text", "data": "No groups connected. Use `!connect` in a group first."}
 
-    if text == "!groups":
-        conn_data = load_json(CONNECT_DB)
-        # Handle switching groups via !use [index]
-        if text.lower().startswith("!use "):
+        # --- Handle switching groups via !use [index] ---
+        if text.startswith("!use "):
             try:
                 idx = int(text.split()[1]) - 1
-                g_ids = list(conn_data["connected_groups"].keys())
+                g_ids = list(user_profile.get("connected_groups", {}).keys())
+                
                 if 0 <= idx < len(g_ids):
                     new_id = g_ids[idx]
-                    conn_data["active_group"] = new_id
+                    # Update the database
+                    conn_data["users"][user_id]["active_group"] = new_id
                     save_json(CONNECT_DB, conn_data)
-                    return {"type": "text", "data": f"✅ Switched active context to: *{user_profile['connected_groups'][new_id]}*"}
-            except:
-                return {"type": "text", "data": "Use: `!use [number]`"}
+                    
+                    group_name = user_profile["connected_groups"][new_id]
+                    return {"type": "text", "data": f"✅ Switched active context to: *{group_name}*"}
+                else:
+                    return {"type": "text", "data": "❌ Invalid group number."}
+            except Exception as e:
+                return {"type": "text", "data": "Usage: `!use [number]`"}
 
-            # Map all groups and highlight active one
-            if text.lower() == "!groups":
-                groups = conn_data.get("connected_groups", {})
-                active = conn_data.get("active_group", "")
-                
-                lines = []
-                for i, (g_id, g_name) in enumerate(groups.items(), 1):
-                    prefix = "🟢 *[ACTIVE]*" if g_id == active else "⚪️"
-                    lines.append(f"{i}. {prefix} {g_name}")
-                
-                menu = "📂 *Your Connected Groups:*\n\n" + "\n".join(lines)
-                menu += "\n\nSwitch using `!use [number]`"
-                return {"type": "text", "data": menu}
+        # --- Handle listing groups via !groups ---
+        if text == "!groups":
+            groups = user_profile.get("connected_groups", {})
+            active = user_profile.get("active_group", "")
+            
+            if not groups:
+                return {"type": "text", "data": "No connected groups found."}
 
-            # Set the active chat ID for note fetching/saving
-            active_chat_id = user_profile.get("active_group", chat_id)
-            context_name = user_profile["connected_groups"].get(active_chat_id, "this chat")
+            lines = []
+            for i, (g_id, g_name) in enumerate(groups.items(), 1):
+                prefix = "🟢 *[ACTIVE]*" if g_id == active else "⚪️"
+                lines.append(f"{i}. {prefix} {g_name}")
+            
+            menu = "📂 *Your Connected Groups:*\n\n" + "\n".join(lines)
+            menu += "\n\nSwitch using `!use [number]`"
+            return {"type": "text", "data": menu}
 
     # --- 1. BOT ADMIN SHIELD ---
     if chat_id.startswith("-"):
