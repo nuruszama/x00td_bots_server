@@ -53,7 +53,8 @@ def process_logic(msg, admin_id, token):
                     "/start         - Alive check\n"
                     "/status      - Battery info\n"
                     "/ip              - Server & SMB Info\n"
-                    "/getlogs     - Activity Database\n"
+                    "/chatlogs     - Activity Database\n"
+                    "/botlogs       - bot background logs\n"
                     "/clearlogs  - Reset History\n"
                     "/reload       - Hot-reload all logic"
                 )
@@ -83,8 +84,11 @@ def process_logic(msg, admin_id, token):
                 )
             }
         
-        if text == "/getlogs":
-            return "UPLOAD_LOGS"
+        if text == "/botlogs":
+            return "UPLOAD_BOT_BACKGROUND_LOGS"
+            
+        if text == "/chatlogs":
+            return "UPLOAD_CHAT_LOGS"
                 
         if text == "/clearlogs":
             return {
@@ -93,7 +97,7 @@ def process_logic(msg, admin_id, token):
             }
                         
         if text == "/clearlogs_yes":
-            return "CLEAR_LOGS"
+            return "CLEAR_CHAT_LOGS"
         
         if text == "/reload":
             return "BOT_RELOAD"
