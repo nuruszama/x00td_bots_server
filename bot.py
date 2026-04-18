@@ -237,27 +237,37 @@ def bot_worker(bot_name, token, admin_id):
                         }
                         
                 elif response == "BOT_RELOAD":
-                    # 1. Pull latest code from GitHub
+                    # Force Sync with GitHub
                     try:
-                        # 'cwd=BASE_DIR' ensures git runs in your project root
+                        # Fetch the latest data without merging yet
+                        subprocess.run(["git", "fetch", "--all"], cwd=BASE_DIR, check=True)
+                        
+                        # Hard reset to origin/main (This fixes the 'not pulling' issue)
                         pull_result = subprocess.run(
-                            ["git", "pull", "origin", "main"], 
+                            ["git", "reset", "--hard", "origin/main"], 
                             cwd=BASE_DIR, 
                             capture_output=True, 
                             text=True
                         )
-                        pull_msg = "Git: " + (pull_result.stdout[:50] if pull_result.returncode == 0 else f"❌ Error: {pull_result.stderr[:100]}")
+                        
+                        if pull_result.returncode == 0:
+                            pull_msg = "✅ System Synced (Hard Reset)"
+                        else:
+                            pull_msg = f"❌ Sync Failed: {pull_result.stderr[:100]}"
+                            
                     except Exception as e:
                         pull_msg = f"❌ Git Error: {str(e)}"
 
-                    # 2. Reload the Python modules
-                    importlib.reload(tools)
+                    # Reload the Python modules
+                    try:
+                        importlib.reload(tools)
+                        reload_status = "🔄 Modules Refreshed!"
+                    except Exception as e:
+                        reload_status = f"❌ Python Reload Error: {str(e)}"
                     
                     response = {
                         "type": "text",
-                        "data": (
-                            f" {pull_msg}\n\n🔄 *System Refreshed!*\n"
-                        )
+                        "data": f"{pull_msg}\n\n{reload_status}"
                     }
 
                 if response and isinstance(response, dict):
