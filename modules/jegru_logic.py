@@ -50,9 +50,6 @@ def process_logic(msg, bot_name, admin_id, token):
 
     # --- 2. Handle Saving (Video & Document) ---
     if "video" in msg or "document" in msg:
-        # Only admins can add movies to the DB
-        if not is_admin:
-            return None 
 
         file_type = "video" if "video" in msg else "document"
         file_id = msg[file_type]['file_id']
