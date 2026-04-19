@@ -38,7 +38,7 @@ def process_logic(msg, bot_name, admin_id, token):
     if text == "/start":
         return {
             "type": "text",
-            "data": f"Hello {full_name}. Jegru is online...."
+            "data": f"Hello {full_name}. {bot_name} is online...."
         }
 
     # --- 1. BOT ADMIN SHIELD ---
