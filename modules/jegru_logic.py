@@ -25,6 +25,8 @@ def send_group_log(text, token):
 
 # UPDATED: Added bot_name to function signature to match your bot.py
 def process_logic(msg, bot_name, admin_id, token):
+    chat = msg.get("chat", {})
+    chat_type = chat.get("type")
     user_info = msg.get("from", {})
     user_id = str(user_info.get("id"))
     chat_id = str(msg.get("chat", {}).get("id"))
@@ -35,14 +37,15 @@ def process_logic(msg, bot_name, admin_id, token):
     is_admin = user_id == str(admin_id)
     cmd = text.lower()
 
-    if text == "/start":
-        return {
-            "type": "text",
-            "data": f"Hello {full_name}. {bot_name} is online...."
-        }
+    if chat_type == "private":
+        if text == "/start":
+            return {
+                "type": "text",
+                "data": f"Hello {full_name}. {bot_name} is online...."
+            }
 
     # --- 1. BOT ADMIN SHIELD ---
-    if chat_id.startswith("-"):
+    if chat_type is not "private":
         if not is_bot_admin(chat_id, token):
             if text.startswith("/"):
                 return {"type": "text", "data": "⚠️ Jegru needs Admin rights to work here."}
