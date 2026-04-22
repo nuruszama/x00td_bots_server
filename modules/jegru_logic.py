@@ -20,9 +20,44 @@ def is_bot_admin(chat_id, token):
 def send_group_log(text, token):
     url = f"https://api.telegram.org/bot{token}/sendMessage"
     try:
-        requests.post(url, data={"chat_id": LOG_GROUP_ID, "text": f"🎬 Jegru Log: {text}"}, timeout=5)
+        requests.post(url, data={"chat_id": LOG_GROUP_ID, "text": f"🎬 {bot_name} Log: {text}"}, timeout=5)
     except: pass
 
+def save_to_db(msg, bot_name, admin_id, token):
+    # The save logic to db
+    if "video" in msg or "document" in msg:
+
+        file_type = "video" if "video" in msg else "document"
+        file_id = msg[file_type]['file_id']
+        
+        # Priority: Caption > Document Filename
+        file_name = msg.get("caption")
+        if not file_name and file_type == "document":
+            file_name = msg['document'].get('file_name')
+        
+        if not file_name:
+            return {"type": "text", "data": "⚠️ Give this movie a caption to save it."}
+        
+        db = []
+        if os.path.exists(JEGRU_DB):
+            with open(JEGRU_DB, "r") as f:
+                try: db = json.load(f)
+                except: db = []
+        
+        if any(item['file_id'] == file_id or item['name'].lower() == file_name.lower() for item in db):
+            return {"type": "text", "data": "ℹ️ Already in database."}
+            
+        db.append({"file_id": file_id, "type": file_type, "name": file_name})
+        with open(JEGRU_DB, "w") as f:
+            json.dump(db, f, indent=4)
+        
+        send_group_log(f"Added: {file_name}", token)
+        return {"type": "text", "data": f"✅ Saved: {file_name}", "delete_original": True}
+        
+def echo(msg, bot_name, admin_id, token):
+    # logic to echo the document or video to chat_id
+    
+            
 # UPDATED: Added bot_name to function signature to match your bot.py
 def process_logic(msg, bot_name, admin_id, token):
     chat = msg.get("chat", {})
@@ -43,16 +78,21 @@ def process_logic(msg, bot_name, admin_id, token):
                 "type": "text",
                 "data": f"Hello {full_name}. {bot_name} is online...."
             }
+        else:
+            save_to_db()
+            echo()
 
     # --- 1. BOT ADMIN SHIELD ---
     if chat_type is not "private":
         if not is_bot_admin(chat_id, token):
             if text.startswith("/"):
-                return {"type": "text", "data": "⚠️ Jegru needs Admin rights to work here."}
+                return {"type": "text", "data": f"⚠️ {bot_name} needs Admin rights to work here."}
             return None
 
-    # --- 2. Handle Saving (Video & Document) ---
-    if "video" in msg or "document" in msg:
+    # --- 3. Commands ---
+    # SEARCH
+    if cmd.startswith("/search "):
+        query = text[8:].strip().loweif "video" in msg or "document" in msg:
 
         file_type = "video" if "video" in msg else "document"
         file_id = msg[file_type]['file_id']
@@ -64,30 +104,7 @@ def process_logic(msg, bot_name, admin_id, token):
         
         if not file_name:
             return {"type": "text", "data": "⚠️ Give this movie a caption to save it."}
-
-        db = []
-        if os.path.exists(JEGRU_DB):
-            with open(JEGRU_DB, "r") as f:
-                try: db = json.load(f)
-                except: db = []
-        
-        if any(item['file_id'] == file_id or item['name'].lower() == file_name.lower() for item in db):
-            return {"type": "text", "data": "ℹ️ Already in database."}
-            
-        db.append({"file_id": file_id, "type": file_type, "name": file_name})
-        with open(JEGRU_DB, "w") as f:
-            json.dump(db, f, indent=4)
-        
-        send_group_log(f"Added: {file_name}", token)
-        return {"type": "text", "data": f"✅ Saved: {file_name}", "delete_original": True}
-
-    # --- 3. Commands ---
-    if cmd == "/start":
-        return {"type": "text", "data": "🎬 *Jegru Movie System Online*\nUse /search [name] to find movies."}
-
-    # SEARCH
-    if cmd.startswith("/search "):
-        query = text[8:].strip().lower()
+            r()
         if not os.path.exists(JEGRU_DB):
             return {"type": "text", "data": "📂 Database empty."}
             
