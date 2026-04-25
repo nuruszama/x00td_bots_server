@@ -82,8 +82,9 @@ def process_logic(msg, bot_name, admin_id, token):
 
         else:
             if "document" in msg:
+                file_id = msg["document"]["file_id"]
                 file_name = msg["document"].get("file_name", "file.dat")
-                return {"type": "document", "data": msg["document"]["file_id"], "caption": f"{file_name}"}
+                return {"type": "document", "data": file_id, "caption": file_name}
 
             if "photo" in msg:
                 file_id = msg["photo"][-1]["file_id"]
@@ -91,6 +92,7 @@ def process_logic(msg, bot_name, admin_id, token):
             if "video" in msg:
                 file_id = msg["video"]["file_id"]
                 file_name = msg["video"].get("file_name", "video.mp4")
+                return {"type": "video", "data": file_id, "caption": file_name}
 
             if "audio" in msg:
                 file_id = msg["audio"]["file_id"]
@@ -98,73 +100,30 @@ def process_logic(msg, bot_name, admin_id, token):
             if "voice" in msg:
                 file_id = msg["voice"]["file_id"]
         
-        # If admin sends a file in DM, save it
-        if is_admin and ("video" in msg or "document" in msg):
-            return save_to_db(msg, bot_name, token)
-        
-        # If user types a movie name in DM, try to send it (Auto-Get)
-        movie = find_movie(cmd)
-        if movie:
-            return {
-                "type": movie['type'], 
-                "data": movie['file_id'], 
-                "caption": f"🎥 {movie['name']}"
-            }
-
     # --- 2. GROUP ADMIN SHIELD ---
     if chat_type != "private":
         if not is_bot_admin(chat_id, token):
             if text.startswith("/"):
                 return {"type": "text", "data": f"⚠️ {bot_name} needs Admin rights to work here."}
+
+        else:
+            if "document" in msg:
+                file_id = msg["document"]["file_id"]
+                file_name = msg["document"].get("file_name", "file.dat")
+                return {"type": "document", "data": file_id, "caption": file_name}
+
+            if "photo" in msg:
+                file_id = msg["photo"][-1]["file_id"]
+
+            if "video" in msg:
+                file_id = msg["video"]["file_id"]
+                file_name = msg["video"].get("file_name", "video.mp4")
+                return {"type": "video", "data": file_id, "caption": file_name}
+
+            if "audio" in msg:
+                file_id = msg["audio"]["file_id"]
+
+            if "voice" in msg:
+                file_id = msg["voice"]["file_id"]
+                
             return None
-
-    # --- 3. COMMANDS ---
-    
-    # SEARCH
-    if cmd.startswith("/search "):
-        query = text[8:].strip().lower()
-        if not os.path.exists(JEGRU_DB):
-            return {"type": "text", "data": "📂 Database empty."}
-            
-        with open(JEGRU_DB, "r") as f:
-            db = json.load(f)
-            
-        matches = [i['name'] for i in db if query in i['name'].lower()]
-        if not matches:
-            return {"type": "text", "data": f"❌ No matches for '{query}'."}
-            
-        res = "\n".join([f"🎬 `{m}`" for m in matches[:10]])
-        return {"type": "text", "data": f"🔍 *Results for '{query}':*\n\n{res}\n\nUse `/get [exact name]`"}
-
-    # GET
-    if cmd.startswith("/get "):
-        query = text[5:].strip().lower()
-        movie = find_movie(query)
-        if movie:
-            return {
-                "type": movie['type'], 
-                "data": movie['file_id'], 
-                "caption": f"🎥 {movie['name']}",
-                "reply_to": True
-            }
-        return {"type": "text", "data": "❌ Not found. Use `/search` to find the exact name."}
-
-    # DELETE (Admin Only)
-    if cmd.startswith("/delete ") and is_admin:
-        query = text[8:].strip().lower()
-        if not os.path.exists(JEGRU_DB): return None
-        
-        with open(JEGRU_DB, "r") as f:
-            db = json.load(f)
-        
-        new_db = [item for item in db if item['name'].lower() != query]
-        if len(db) == len(new_db):
-            return {"type": "text", "data": f"❌ '{query}' not found."}
-            
-        with open(JEGRU_DB, "w") as f:
-            json.dump(new_db, f, indent=4)
-        
-        send_group_log(f"Deleted: {query}", bot_name, token)
-        return {"type": "text", "data": f"🗑️ Removed '{query}'."}
-
-    return None
