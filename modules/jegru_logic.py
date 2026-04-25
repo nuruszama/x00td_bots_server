@@ -76,11 +76,13 @@ def process_logic(msg, bot_name, admin_id, token):
 
     # --- 1. PRIVATE CHAT LOGIC ---
     if chat_type == "private":
+        
         if cmd == "/start":
             first_name = msg.get("from", {}).get("first_name", "User")
             return {"type": "text", "data": f"Hello {first_name}. {bot_name} is online...."}
 
         else:
+            
             if "document" in msg:
                 file_id = msg["document"]["file_id"]
                 file_name = msg["document"].get("file_name", "file.dat")
@@ -102,15 +104,15 @@ def process_logic(msg, bot_name, admin_id, token):
         
     # --- 2. GROUP ADMIN SHIELD ---
     if chat_type != "private":
+        
         if not is_bot_admin(chat_id, token):
-            if text.startswith("/"):
-                return {"type": "text", "data": f"⚠️ {bot_name} needs Admin rights to work here."}
-
-        else:
+            return None
+                
+        elif:
             if "document" in msg:
-                file_id = msg["document"]["file_id"]
+            file_id = msg["document"]["file_id"]
                 file_name = msg["document"].get("file_name", "file.dat")
-                return {"type": "document", "data": file_id, "caption": file_name}
+                return {"type": "document", "data": file_id, "caption": file_name, "delete_original": True}
 
             if "photo" in msg:
                 file_id = msg["photo"][-1]["file_id"]
@@ -118,12 +120,15 @@ def process_logic(msg, bot_name, admin_id, token):
             if "video" in msg:
                 file_id = msg["video"]["file_id"]
                 file_name = msg["video"].get("file_name", "video.mp4")
-                return {"type": "video", "data": file_id, "caption": file_name}
+                return {"type": "video", "data": file_id, "caption": file_name, "delete_original": True}
 
             if "audio" in msg:
                 file_id = msg["audio"]["file_id"]
 
             if "voice" in msg:
                 file_id = msg["voice"]["file_id"]
+
+        if text.startswith("/"):
+            return {"type": "text", "data": f"⚠️ {bot_name} needs Admin rights to work here / work in progress."}
                 
-            return None
+    return None
