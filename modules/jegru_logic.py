@@ -79,6 +79,24 @@ def process_logic(msg, bot_name, admin_id, token):
         if cmd == "/start":
             first_name = msg.get("from", {}).get("first_name", "User")
             return {"type": "text", "data": f"Hello {first_name}. {bot_name} is online...."}
+
+        else:
+            if "document" in msg:
+                file_name = msg["document"].get("file_name", "file.dat")
+                return {"type": "document", "data": msg["document"]["file_id"], "caption": f"{file_name}"}
+
+            if "photo" in msg:
+                file_id = msg["photo"][-1]["file_id"]
+
+            if "video" in msg:
+                file_id = msg["video"]["file_id"]
+                file_name = msg["video"].get("file_name", "video.mp4")
+
+            if "audio" in msg:
+                file_id = msg["audio"]["file_id"]
+
+            if "voice" in msg:
+                file_id = msg["voice"]["file_id"]
         
         # If admin sends a file in DM, save it
         if is_admin and ("video" in msg or "document" in msg):
