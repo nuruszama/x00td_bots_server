@@ -94,7 +94,7 @@ def process_logic(msg, bot_name, admin_id, token):
 
         if "document" in msg:
             file_id = msg["document"]["file_id"]
-            file_name = msg["document"].get("caption").split('\n')[0]
+            file_name = msg.get("caption").split('\n')[0]
             return {"type": "document", "data": file_id, "caption": file_name}
 
         if "photo" in msg:
