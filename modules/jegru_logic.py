@@ -92,7 +92,7 @@ def process_logic(msg, bot_name, admin_id, token):
             if "video" in msg:
                 file_id = msg["video"]["file_id"]
                 file_name = msg["video"].get("file_name", "video.mp4")
-                return {"type": "video", "data": file_id, "caption": file_name}
+                return {"type": "video", "data": file_id, "caption": file_name, "delete_original": True}
 
             if "audio" in msg:
                 file_id = msg["audio"]["file_id"]
