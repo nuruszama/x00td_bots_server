@@ -61,6 +61,12 @@ def process_logic(msg, bot_name, admin_id, token):
     cmd = text.lower()
     is_admin = user_id == str(admin_id)
 
+    if chat_type != "private":
+        bot_is_admin = is_bot_admin(chat_id, token)
+
+        if not bot_is_admin:
+            return None
+            
     # Check for media types dynamically
     media_map = {
         "photo": lambda m: m["photo"][-1]["file_id"],
@@ -80,37 +86,22 @@ def process_logic(msg, bot_name, admin_id, token):
             file_id = get_id(msg)
             break
 
-    if chat_type == "private":
-        if cmd == "/start":
-            first_name = msg.get("from", {}).get("first_name", "User")
-            return {"type": "text", "data": f"Hello {first_name}. {bot_name} is online...."}
+    if cmd == "/start":
+        first_name = msg.get("from", {}).get("first_name", "User")
+        return {"type": "text", "data": f"Hello {first_name}. {bot_name} is online...."}
 
-        # If any media was detected, echo it back
-        if res_type and file_id:
-            raw_caption = msg.get("caption").split('\n')[0] or msg.get(res_type, {}).get("file_name")
-            caption = raw_caption if res_type == "document" else msg.get(res_type, {}).get("file_name")
+    # If any media was detected, echo it back
+    if res_type and file_id:
+        caption_text = msg.get("caption") or ""
+        file_name = msg.get(res_type, {}).get("file_name") or f"Shared {res_type}"
+        
+        display_caption = caption_text.split('\n')[0] if (res_type == "document" and caption_text) else file_name
             
-            return {
-                "type": res_type,
-                "data": file_id,
-                "caption": caption,
-                "delete_original": True
-            }
-
-    # --- 2. GROUP ADMIN SHIELD ---
-    if chat_type != "private":
-        if cmd == "/start":
-            return {"type": "text", "data": f"⚠️ {bot_name} needs Admin rights to work here / work in progress."}
-            
-        # If any media was detected, echo it back
-        if res_type and file_id:
-            raw_caption = msg.get("caption").split('\n')[0] or msg.get(res_type, {}).get("file_name")
-            caption = raw_caption if res_type == "document" else msg.get(res_type, {}).get("file_name")
-            
-            return {
-                "type": res_type,
-                "data": file_id,
-                "caption": caption
-            }
+        return {
+            "type": res_type,
+            "data": file_id,
+            "caption": caption,
+            "delete_original": True
+        }
             
     return None
