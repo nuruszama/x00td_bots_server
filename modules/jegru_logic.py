@@ -62,7 +62,7 @@ def process_logic(msg, bot_name, admin_id, token):
     is_admin = user_id == str(admin_id)
 
     # Check for media types dynamically
-    media_types = {
+    media_map = {
         "photo": lambda m: m["photo"][-1]["file_id"],
         "video": lambda m: m["video"]["file_id"],
         "document": lambda m: m["document"]["file_id"],
