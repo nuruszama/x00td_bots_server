@@ -93,7 +93,7 @@ def process_logic(msg, bot_name, admin_id, token):
             return {
                 "type": res_type,
                 "data": file_id,
-                "caption": clean_caption,
+                "caption": caption,
                 "delete_original": True
             }
 
@@ -110,7 +110,7 @@ def process_logic(msg, bot_name, admin_id, token):
             return {
                 "type": res_type,
                 "data": file_id,
-                "caption": clean_caption
+                "caption": caption
             }
             
     return None
