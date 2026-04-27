@@ -61,57 +61,56 @@ def process_logic(msg, bot_name, admin_id, token):
     cmd = text.lower()
     is_admin = user_id == str(admin_id)
 
-    # --- 1. PRIVATE CHAT LOGIC ---
+    # Check for media types dynamically
+    media_types = {
+        "photo": lambda m: m["photo"][-1]["file_id"],
+        "video": lambda m: m["video"]["file_id"],
+        "document": lambda m: m["document"]["file_id"],
+        "audio": lambda m: m["audio"]["file_id"],
+        "voice": lambda m: m["voice"]["file_id"]
+    }
+
+    # Check for media content
+    res_type = None
+    file_id = None
+    
+    for m_type, get_id in media_map.items():
+        if m_type in msg:
+            res_type = m_type
+            file_id = get_id(msg)
+            break
+
     if chat_type == "private":
-        
         if cmd == "/start":
             first_name = msg.get("from", {}).get("first_name", "User")
             return {"type": "text", "data": f"Hello {first_name}. {bot_name} is online...."}
 
-        else:
+        # If any media was detected, echo it back
+        if res_type and file_id:
+            raw_caption = msg.get("caption").split('\n')[0] or msg.get(res_type, {}).get("file_name")
+            caption = raw_caption if res_type == "document" else msg.get(res_type, {}).get("file_name")
             
-            if "document" in msg:
-                file_id = msg["document"]["file_id"]
-                file_name = msg.get("caption").split('\n')[0]
-                return {"type": "document", "data": file_id, "caption": file_name, "delete_original": True}
+            return {
+                "type": res_type,
+                "data": file_id,
+                "caption": clean_caption,
+                "delete_original": True
+            }
 
-            if "photo" in msg:
-                file_id = msg["photo"][-1]["file_id"]
-
-            if "video" in msg:
-                file_id = msg["video"]["file_id"]
-                file_name = msg["video"].get("file_name")
-                return {"type": "video", "data": file_id, "caption": file_name, "delete_original": True}
-
-            if "audio" in msg:
-                file_id = msg["audio"]["file_id"]
-
-            if "voice" in msg:
-                file_id = msg["voice"]["file_id"]
-        
     # --- 2. GROUP ADMIN SHIELD ---
     if chat_type != "private":
-
-        if "document" in msg:
-            file_id = msg["document"]["file_id"]
-            file_name = msg.get("caption").split('\n')[0]
-            return {"type": "document", "data": file_id, "caption": file_name}
-
-        if "photo" in msg:
-            file_id = msg["photo"][-1]["file_id"]
-
-        if "video" in msg:
-            file_id = msg["video"]["file_id"]
-            file_name = msg["video"].get("file_name")
-            return {"type": "video", "data": file_id, "caption": file_name}
-
-        if "audio" in msg:
-            file_id = msg["audio"]["file_id"]
-
-        if "voice" in msg:
-            file_id = msg["voice"]["file_id"]
-
-        if text.startswith("/"):
+        if cmd == "/start":
             return {"type": "text", "data": f"⚠️ {bot_name} needs Admin rights to work here / work in progress."}
-                
+            
+        # If any media was detected, echo it back
+        if res_type and file_id:
+            raw_caption = msg.get("caption").split('\n')[0] or msg.get(res_type, {}).get("file_name")
+            caption = raw_caption if res_type == "document" else msg.get(res_type, {}).get("file_name")
+            
+            return {
+                "type": res_type,
+                "data": file_id,
+                "caption": clean_caption
+            }
+            
     return None
