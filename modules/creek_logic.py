@@ -3,8 +3,8 @@ import json
 import requests
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-CREEK_DB = os.path.join(os.path.dirname(BASE_DIR), "creek_notes.json")
-CONNECT_DB = os.path.join(os.path.dirname(BASE_DIR), "creek_connect_database.json")
+CREEK_DB = os.path.join(os.path.dirname(BASE_DIR), "databases/creek_notes.json")
+CONNECT_DB = os.path.join(os.path.dirname(BASE_DIR), "databases/creek_connect_database.json")
 
 def load_json(path):
     if not os.path.exists(path):

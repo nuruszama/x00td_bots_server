@@ -5,8 +5,8 @@ import requests
 # Constants
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # Moves up one level from 'modules' to the main folder for the JSON
-JEGRU_DB = os.path.join(os.path.dirname(BASE_DIR), "jegru_movies_database.json")
-LOG_GROUP_ID = "-1002602661603"
+JEGRU_DB = os.path.join(os.path.dirname(BASE_DIR), "databases/jegru_movies_database.json")
+LOG_GROUP_ID = os.path.join(os.path.dirname(BASE_DIR), "databases/dump.json")
 
 def is_bot_admin(chat_id, token):
     bot_id = token.split(":")[0]

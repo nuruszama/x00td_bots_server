@@ -2,14 +2,13 @@
 config.json
 
 # Databases and Connection Mappings
-creek_connect_database.json
-creek_notes.json
-jegru_movies_database.json
+databases/
+*.json
 
 # Logs
-bot.log
+bot_logs.txt
 activity_log.json
-*.log
+sync_log.txt
 
 # Python Cache
 __pycache__/

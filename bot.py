@@ -25,7 +25,7 @@ CONFIG = load_config()
 # We wrap it in str() to ensure it matches the Telegram API ID format
 BOT_ADMIN = str(CONFIG.get("bot_admin_id", ""))
 
-LOG_FILE = os.path.join(BASE_DIR, "activity_log.json")
+LOG_FILE = os.path.join(BASE_DIR, "databases/activity_log.json")
 BOT_LOG_FILE = os.path.join(BASE_DIR, "bot_logs.txt")
 
 def save_to_json(entry):
