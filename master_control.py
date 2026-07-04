@@ -33,7 +33,7 @@ def execute_system_git_reload():
         
         # Overwrite local uncommitted changes with remote tracking branch state
         pull_result = subprocess.run(
-            ["git", "reset", "--hard", "origin/main"], 
+            ["git", "reset", "--hard", "origin/1.01"], 
             cwd=BASE_DIR, 
             capture_output=True, 
             text=True
