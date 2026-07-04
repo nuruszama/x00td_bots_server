@@ -228,6 +228,18 @@ def run_master_loop():
     offset = 0
     url = f"https://api.telegram.org/bot{token}"
     
+    # --- STARTUP NOTIFICATION ---
+    if master_bot_name == "TD-Ghost":
+        requests.session.post(f"{url}/sendMessage", data={
+            "chat_id": admin_id, 
+            "text": (
+                "---------------------------------------------------\n"
+                "    🚀  *TD BOT is now Online*\n"
+                "---------------------------------------------------"
+            ),
+            "parse_mode": "Markdown"
+        })
+
     while True:
         try:
             r = requests.get(f"{url}/getUpdates", params={"offset": offset, "timeout": 10}, timeout=15)

@@ -111,6 +111,7 @@ def client_polling_worker(bot_name, token):
     system_logger(f"✅ Launching client bot framework worker for [{bot_name}]")
     offset = 0
     url = f"https://api.telegram.org/bot{token}"
+
     while True:
         try:
             r = requests.get(f"{url}/getUpdates", params={"offset": offset, "timeout": 10}, timeout=15)
