@@ -170,8 +170,6 @@ def send_master_dashboard(url, chat_id, message_id=None):
     inline_keyboard = []
     for username in client_bots:
         inline_keyboard.append([{"text": f"@{username}", "callback_data": f"manage:{username}"}])
-        
-    inline_keyboard.append([{"text": "🔄 Dynamic Module Reload", "callback_data": "core_reload"}])
     
     payload = {
         "chat_id": chat_id,
@@ -195,12 +193,6 @@ def handle_master_bot_callback(url, callback_query):
     requests.post(f"{url}/answerCallbackQuery", data={"callback_query_id": qid})
     
     if data == "menu_main":
-        send_master_dashboard(url, chat_id, message_id)
-        return
-        
-    if data == "core_reload":
-        modules_manager.sync_modules_matrix()
-        requests.post(f"{url}/sendMessage", data={"chat_id": chat_id, "text": "🔄 Active modules table reloaded from storage directory."})
         send_master_dashboard(url, chat_id, message_id)
         return
 
@@ -261,7 +253,7 @@ def run_master_loop():
     
     # --- STARTUP NOTIFICATION ---
     if master_bot_name == "TD-Ghost":
-        requests.session.post(f"{url}/sendMessage", data={
+        requests.post(f"{url}/sendMessage", data={
             "chat_id": admin_id, 
             "text": (
                 "---------------------------------------------------\n"
