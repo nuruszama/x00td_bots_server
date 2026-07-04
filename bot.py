@@ -5,6 +5,7 @@ import time
 import requests
 import datetime
 import threading
+import importlib
 
 import modules_manager # Import the modules manager for dynamic feature handling
 import master_control  # Import the separate master logic
@@ -77,7 +78,7 @@ def transmit_file(token, chat_id, filepath, caption):
         system_logger(f"File sync network error: {e}")
         return False
 
-# 
+# Define the function to schedule maintenance tasks
 def maintenance_scheduler():
     """Reads execution thresholds parameters cleanly from master_config.json."""
     system_logger("📅 Daily scheduler routine initiated.")
@@ -106,7 +107,34 @@ def maintenance_scheduler():
         except Exception as e:
             system_logger(f"Scheduler core error: {e}"); time.sleep(10)
 
-# 
+# Generic action mechanism to process a module's response dict output cleanly
+def execute_bot_response(response, original_msg, token):
+    url = f"https://api.telegram.org/bot{token}"
+    chat_id = original_msg.get("chat", {}).get("id")
+    res_type = response.get("type")
+    data = response.get("data")
+    
+    payload = {"chat_id": chat_id}
+    
+    if res_type == "text":
+        payload["text"] = data
+        requests.post(f"{url}/sendMessage", data=payload)
+    elif res_type in ["photo", "video", "document", "audio", "voice"]:
+        method_map = {
+            "photo": "sendPhoto", "video": "sendVideo", "document": "sendDocument",
+            "audio": "sendAudio", "voice": "sendVoice"
+        }
+        payload[res_type] = data
+        if "caption" in response:
+            payload["caption"] = response["caption"]
+            
+        requests.post(f"{url}/{method_map[res_type]}", data=payload)
+        
+    # Handle original file deletion cleanups if specified by module rules
+    if response.get("delete_original") and "message_id" in original_msg:
+        requests.post(f"{url}/deleteMessage", data={"chat_id": chat_id, "message_id": original_msg["message_id"]})
+
+# Define polling workers which check for updates from Telegram and dispatch them to active modules.
 def client_polling_worker(bot_name, token):
     system_logger(f"✅ Launching client bot framework worker for [{bot_name}]")
     offset = 0
@@ -124,15 +152,24 @@ def client_polling_worker(bot_name, token):
                 log_entry = flatten_telegram_update(msg, bot_name)
                 commit_activity_log(log_entry)
 
+                # Pull the active features instantly from the shared memory matrix
                 active_features = modules_manager.ACTIVE_MATRIX.get(bot_name, [])
+
                 for feature in active_features:
                     try:
-                        import importlib
                         mod = importlib.import_module(f"modules.{feature}")
                         importlib.reload(mod)
-                        mod.run(msg, token, log_entry)
+
+                        # Run the module logic
+                        response = mod.process_logic(msg, bot_name, admin_id, token)
+                        
+                        if response:
+                            execute_bot_response(response, msg, token)
+                            break # Stop checking other modules for this message
+
                     except Exception as feature_err:
                         system_logger(f"💥 Runtime Module Crash [{feature}] via Bot [{bot_name}]: {feature_err}")
+        
         except Exception as loop_error:
             system_logger(f"⚠️ Network error loop intercept on [{bot_name}]: {loop_error}")
             time.sleep(5)
