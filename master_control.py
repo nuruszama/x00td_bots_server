@@ -3,6 +3,7 @@ import time
 import json
 import requests
 import datetime
+import socket
 import threading
 import subprocess
 import modules_manager
@@ -25,6 +26,16 @@ def load_client_bot_names():
         return []
 
 # --- Android Hardware Integration Layer ---
+def get_local_ip():
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        local_ip = s.getsockname()[0]
+        s.close()
+        return local_ip
+    except:
+        return "127.0.0.1"
+
 def get_battery_info():
     """Reads capacity nodes directly from the underlying Linux system sysfs structure."""
     try:
@@ -62,14 +73,14 @@ def get_help_text(master_bot_name):
         "----------------------------------------------------------------\n"
         f"        🤖 *{master_bot_name} Admin Panel*\n"
         "----------------------------------------------------------------\n"
-        "/start         - Alive check\n"
-        "/help          - Command list\n"
-        "/status       - Battery & Instance info\n"
-        "/ip               - Server & SMB Info\n"
+        "/start           - Alive check\n"
+        "/help            - Command list\n"
+        "/status         - Battery & Instance info\n"
+        "/ip                 - Server & SMB Info\n"
         "/chatlogs     - Activity Database\n"
         "/botlogs       - bot background logs\n"
         "/dashboard  - Manage Bots\n"
-        "/reload       - Hot-reload all logic"
+        "/reload         - Hot-reload all logic"
     )
 
 def get_start_text():
@@ -95,13 +106,7 @@ def get_status_text(master_bot_name):
     )
 
 def get_ip_info_text():
-    try:
-        response = requests.get("https://api.ipify.org?format=json", timeout=5)
-        public_ip = response.json().get("ip", "Unknown")
-        local_ip = os.popen("hostname -I").read().strip().split()[0]
-    except:
-        public_ip = "Unavailable"
-        local_ip = "127.0.0.1"
+    local_ip = get_local_ip()
 
     try:
         nodename = os.uname().nodename
@@ -115,7 +120,6 @@ def get_ip_info_text():
     return (
         "🌐 *Network Information*\n"
         "────────────────────\n"
-        f"📡 Public IP: {public_ip}\n"
         f"🖥️ Server Hostname: {nodename}\n"
         f"💻 Platform: {sysname} {release}\n"
         f"🌐 *Local IP:* `{local_ip}`\n"
@@ -130,7 +134,6 @@ def send_master_dashboard(url, chat_id, message_id=None):
     
     text = "🛠️ *System Core Master Dashboard*\n"
     text += "────────────────────\n"
-    text += f"📅 *Time:* {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}\n\n"
     text += "Select a target bot instance to manage active feature allocations:\n"
     
     inline_keyboard = []
