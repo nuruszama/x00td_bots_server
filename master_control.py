@@ -25,6 +25,37 @@ def load_client_bot_names():
     except:
         return []
 
+def execute_system_git_reload():
+    """Forces a hard reset sync with GitHub origin/main and reloads the modules matrix."""
+    try:
+        # Fetch latest changes from the remote tracking repository
+        subprocess.run(["git", "fetch", "--all"], cwd=BASE_DIR, check=True)
+        
+        # Overwrite local uncommitted changes with remote tracking branch state
+        pull_result = subprocess.run(
+            ["git", "reset", "--hard", "origin/main"], 
+            cwd=BASE_DIR, 
+            capture_output=True, 
+            text=True
+        )
+        
+        if pull_result.returncode == 0:
+            pull_msg = "✅ System Synced (Hard Reset)"
+        else:
+            pull_msg = f"❌ Sync Failed: {pull_result.stderr[:100]}"
+            
+    except Exception as e:
+        pull_msg = f"❌ Git Error: {str(e)}"
+
+    # Refresh module allocations cleanly after pulling the new files
+    try:
+        modules_manager.sync_modules_matrix()
+        reload_status = "🔄 Modules Matrix Refreshed!"
+    except Exception as e:
+        reload_status = f"❌ Sync Reload Error: {str(e)}"
+    
+    return f"{pull_msg}\n\n{reload_status}"
+
 # --- Android Hardware Integration Layer ---
 def get_local_ip():
     try:
@@ -277,8 +308,10 @@ def run_master_loop():
                 elif text == "/dashboard":
                     send_master_dashboard(url, chat_id)
                 elif text == "/reload":
+                    sync_results_text = execute_system_git_reload()
+                    requests.post(f"{url}/sendMessage", data={"chat_id": chat_id, "text": sync_results_text})
                     modules_manager.sync_modules_matrix()
-                    requests.post(f"{url}/sendMessage", data={"chat_id": chat_id, "text": "🔄 Active matrix forced reload. Modules cleared and synced."})
+                    requests.post(f"{url}/sendMessage", data={"chat_id": chat_id, "text": "Modules cleared and synced."})
                 elif text in ["/chatlogs", "/botlogs"]:
                     filename = "activity_logs.txt" if text == "/chatlogs" else "bot_logs.txt"
                     filepath = os.path.join(BASE_DIR, filename)
