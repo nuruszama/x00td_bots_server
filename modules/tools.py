@@ -4,7 +4,6 @@ import importlib
 from modules import ghost_logic
 from modules import creek_logic
 from modules import jegru_logic
-from modules import ciper_logic
 from modules import saiha_logic
 from modules import twitzi_logic
 from modules import sweet_logic
@@ -15,7 +14,6 @@ def process_logic(msg, bot_name, admin_id, token):
     importlib.reload(ghost_logic)
     importlib.reload(creek_logic)
     importlib.reload(jegru_logic)
-    importlib.reload(ciper_logic)
     importlib.reload(saiha_logic)
     importlib.reload(twitzi_logic)
     importlib.reload(sweet_logic)
@@ -25,7 +23,6 @@ def process_logic(msg, bot_name, admin_id, token):
         "TD-Ghost": ghost_logic,
         "Creek-Lab": creek_logic,
         "Phoenix-Jegru": jegru_logic,
-        "Ciper-Wire": ciper_logic,
         "Saihabath": saiha_logic,
         "Twitzi": twitzi_logic,
         "Sweety": sweet_logic
