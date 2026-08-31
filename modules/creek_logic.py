@@ -106,7 +106,7 @@ def process_logic(msg, bot_name, admin_id, token):
                     "📝 Notes:\n"
                     "• !notes\n"
                     "• !save [name] (reply)\n"
-                    "• ?name\n"
+                    "• #name\n"
                 )
             }
 
@@ -151,7 +151,7 @@ def process_logic(msg, bot_name, admin_id, token):
                 "📌 Creek Assistant Commands:\n\n"
                 "📝 Notes System:\n"
                 "• !save <name> (reply)\n"
-                "• ?name\n"
+                "• #name\n"
                 "• !notes\n"
                 "• !del <name>\n"
             )
@@ -204,7 +204,7 @@ def process_logic(msg, bot_name, admin_id, token):
     # =========================================================
     # GET NOTE
     # =========================================================
-    if cmd.startswith("?"):
+    if cmd.startswith("#"):
 
         note_name = cmd[1:].strip()
         note = db.get(chat_id, {}).get(note_name)
